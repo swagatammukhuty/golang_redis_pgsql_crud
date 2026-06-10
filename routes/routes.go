@@ -7,8 +7,11 @@ import (
 )
 
 func SetUpRoutes(app *fiber.App) {
+	// app.Get("/getUsers", func(c *fiber.Ctx) error {
+	// 	return handlers.GetAllUsers(c)
+	// })
 	app.Get("/getUsers", func(c *fiber.Ctx) error {
-		return handlers.GetAllUsers(c)
+		return handlers.GetUsersByID(c)
 	})
 	app.Post("/createUsers", func(c *fiber.Ctx) error {
 		return handlers.CreateUser(c)
