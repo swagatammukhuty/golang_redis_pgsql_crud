@@ -1,9 +1,9 @@
 package main
 
 import (
-	"golang_redis_pgsql/internal/handlers"
 	"golang_redis_pgsql/pkg/database"
 	"golang_redis_pgsql/pkg/redis"
+	"golang_redis_pgsql/routes"
 	"log"
 
 	"github.com/gofiber/fiber/v2"
@@ -19,9 +19,7 @@ func main() {
 	database.InitPgDB()
 	redis.InitRedis()
 	app := fiber.New()
-	app.Get("/getAllUsers", func(c *fiber.Ctx) error {
-		return handlers.GetAllUsers(c)
-	})
+	routes.SetUpRoutes(app)
 	log.Printf("Server is running on the port %v", serverPort)
 	err := app.Listen(serverPort)
 	if err != nil {

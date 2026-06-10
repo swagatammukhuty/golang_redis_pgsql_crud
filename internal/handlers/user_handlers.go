@@ -35,3 +35,28 @@ func GetAllUsers(c *fiber.Ctx) error {
 	}
 	return c.Status(fiber.StatusOK).JSON(users)
 }
+
+func CreateUser(c *fiber.Ctx) error {
+	users := new(model.User)
+	if err := c.BodyParser(users); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid Request"})
+	}
+	var lastUser model.User
+	if err := database.DB.Order("id desc").First(&lastUser).Error; err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Database Error"})
+	}
+	users.ID = lastUser.ID + 1
+	err := database.DB.Create(&users).Error
+	data, _ := json.Marshal(users)
+	redis.RedisDB.Del(ctx, "all_users")
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Database Error"})
+	}
+	var u []model.User
+	if err := database.DB.Find(&u).Error; err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Postgres DB Error"})
+	}
+	data, _ = json.Marshal(u)
+	redis.RedisDB.Set(ctx, "all_users", data, 10*time.Minute)
+	return c.Status(fiber.StatusCreated).JSON(users)
+}
